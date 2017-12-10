@@ -1,5 +1,6 @@
 # Book Inventory
 A simple book inventory web application using MongoDB, RestHeart and Polymer 2.0
+
 The web application has the following features:
 1)	Add/Delete Book – The user can add/delete a book entry in the database. The book attributes to be asked from the user are: Title, Category (paper-dropdown-menu), Description, Price. 
 2)	View All Books – The user can view all the books, complete with their attributes. Layout is easy to view and navigate. 
