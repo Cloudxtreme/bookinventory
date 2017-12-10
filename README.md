@@ -1,3 +1,19 @@
+# Book Inventory
+A simple book inventory web application using MongoDB, RestHeart and Polymer 2.0
+The web application has the following features:
+•	Add/Delete Book – The user can add/delete a book entry in the database. The book attributes to be asked from the user are: Title, Category (paper-dropdown-menu), Description, Price. 
+•	View All Books – The user can view all the books, complete with their attributes. Layout is easy to view and navigate. 
+•	Search Book by Title – The user can search a book using the title.
+•	View Books by Category – The user can view books under a specific category.
+•	View Books by Price Range – The user can view books specified by a price range. 
+
+
+
+
+
+
+
+
 # Polymer App Toolbox - Starter Kit
 
 [![Build Status](https://travis-ci.org/PolymerElements/polymer-starter-kit.svg?branch=master)](https://travis-ci.org/PolymerElements/polymer-starter-kit)
