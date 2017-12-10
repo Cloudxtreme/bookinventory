@@ -1,0 +1,186 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid-filter.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-data-table/iron-data-table.html">
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
+
+<dom-module id="my-view2">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+    <div class="card">
+      <!--<div class="circle">2</div>-->
+      <h1>View All Books</h1>
+      <paper-button raised class="primary" on-click="_getBooks">View</paper-button><hr>
+      <div>Price: </div>
+      <paper-slider value="{{price}}" max="9999" editable style="width: 100%"></paper-slider>
+      <br>
+
+
+
+
+<vaadin-grid aria-label="Filtering Example" items="[[booksArray]]">
+
+      <vaadin-grid-column width="50px" flex-grow="0">
+        <template class="header">#</template>
+        <template>[[index]]</template>
+        <template class="footer">#</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column>
+        <template class="header">
+          <vaadin-grid-filter aria-label="Title" path="title" value="">
+            <!--<input placeholder="Title" value="{{_filterFirstName::input}}" focus-target>-->
+          </vaadin-grid-filter>
+        </template>
+        <template>[[item.title]]</template>
+        <template class="footer">Title</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column>
+        <template class="header">
+          <vaadin-grid-filter aria-label="Category" path="category" value="">
+            <!--<input slot="filter" placeholder="Category" value="{{_filterLastName::input}}" focus-target>-->
+          </vaadin-grid-filter>
+        </template>
+        <template>[[item.category]]</template>
+        <template class="footer">Category</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column>
+        <template class="header">Description</template>
+        <template>[[item.description]]</template>
+        <template class="footer">Description</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column>
+        <template class="header">
+          <vaadin-grid-filter aria-label="Price" path="price" value="{{price}}">
+            <!--<input slot="filter" placeholder="Price" value="{{_filterLastName::input}}" focus-target>-->
+          </vaadin-grid-filter>
+        </template>
+        <template>[[item.price]]</template>
+        <template class="footer">Price</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column>
+        <template class="header">Delete Book</template>
+        <template><paper-button raised class="primary" on-click="_deleteBook" data-item$="[[item._id.$oid]]" value="[[item._id.$oid]]">Delete</paper-button></template>
+        <template class="footer">Delete Book</template>
+      </vaadin-grid-column>
+
+</vaadin-grid>
+
+    </div>
+    <!--<div id="results"></div>-->
+    <iron-ajax
+        id="queryBooks"
+        url="http://127.0.0.1:8080/booksys/book"
+        method="GET"
+        handle-as="json"
+        on-response="onReceiveBooks"
+        debounce-duration="300">
+    </iron-ajax>
+
+    <iron-ajax
+        id="deleteBook"
+        url=""
+        method="DELETE"
+        handle-as="json"
+        on-response="onDeleteBook"
+        debounce-duration="300">
+    </iron-ajax>
+
+
+  </template>
+
+  <script>
+    class MyView2 extends Polymer.Element {
+      static get is() { return 'my-view2'; }
+      static get properties(){
+          return{
+              booksArray: {
+                  type: Object, 
+                  value: null
+              },
+              price: {
+                type: Number,
+                value: null
+              }
+          }
+      }
+      ready(){
+        super.ready();
+        this._getBooks();
+        setTimeout(this._getBooks, 1000);
+        this.addEventListener('newBookAdded', this._getBooks);
+
+        window.addEventListener('newBookAdded', function (e) {
+            console.log('yay heard new book added');
+            //_getBooks();
+        });
+      }
+
+      _getBooks(){
+        this.$.queryBooks.generateRequest();
+        console.log("in get books");
+      }
+
+      _deleteBook(event){
+        console.log("okay delete");
+        console.log(event.target.dataset.item);
+        var bookID = event.target.dataset.item;
+        let url = "http://127.0.0.1:8080/booksys/book/" + bookID;
+        console.log(url);
+        this.$.deleteBook.url = url;
+        this.$.deleteBook.generateRequest();
+      }
+
+      onDeleteBook(e){
+        console.log("successfully deleted");
+        console.log(e.detail.response);
+        this._getBooks();
+      }
+
+      onReceiveBooks(e){
+
+          const books = e.detail.response._embedded;
+          var book = '';
+          this.booksArray = books;
+
+          for(var i = 0; i < books.length; i++){
+            book += '<div class="card">'
+                     + '<h1>Title: ' + books[i].title + '</h1>'
+                     + '<p>Category: ' + books[i].category + '</p>'
+                     + '<p>Description: ' + books[i].description +'</p>'
+                     + '<p>Price: ' + books[i].price +'</p>'
+                     + '<paper-button raised on-click="alert"> Delete</paper-button>'
+                     + '</div>';
+          }
+
+          //this.$.results.innerHTML = book;
+      }
+    }
+
+    window.customElements.define(MyView2.is, MyView2);
+  </script>
+</dom-module>

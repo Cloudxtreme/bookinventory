@@ -1,0 +1,106 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<dom-module id="my-view1">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      paper-dropdown-menu, paper-listbox {
+        width: 250px;
+      }
+      paper-dropdown-menu {
+        height: 200px;
+        margin: auto;
+        display: block;
+      }
+    </style>
+
+    <div class="card">
+      <div id="feedback"></div>
+      <h1>Add New Book</h1>
+      <h4>Title: <paper-input id="title" ></paper-input></h4>
+      <h4>Category: </h4>
+      <paper-dropdown-menu id="category" label="Category">
+        <paper-listbox slot="dropdown-content" selected="0">
+          <paper-item>Classic</paper-item>
+          <paper-item>Sci-Fi</paper-item>
+          <paper-item>Horror/ Thriller</paper-item>
+          <paper-item>Romance</paper-item>
+          <paper-item>Mystery</paper-item>
+          <paper-item>Academic</paper-item>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <h4>Description: <paper-input id="desc"></paper-input></h4>
+      <h4>Price: <paper-input id="price" type="number" min="1" step=".05"></paper-input></h4>
+      <paper-button raised class="primary" on-click="_send">Submit</paper-button>
+    </div>
+
+    <iron-ajax
+        id="insertNewBook"
+        url="http://127.0.0.1:8080/booksys/book"
+        body=''
+        method="POST"
+        handle-as="json"
+        content-type="application/json"
+        on-response="onSuccessInsert"
+        debounce-duration="300">
+    </iron-ajax>
+
+  </template>
+
+  <script>
+    class MyView1 extends Polymer.Element {
+      static get is() { return 'my-view1'; }
+      ready(){
+        super.ready();
+      }
+
+
+      _send(){
+          // check if the values are set
+          console.log("pressed send");
+          console.log(this.$.category.value);
+          console.log(this.$.title.value);
+          console.log(this.$.desc.value);
+          console.log(this.$.price.value);
+
+          // set the body attribute of iron ajax to get the rest api url query
+          let body = '[{"title":"'+ this.$.title.value +'" , "category":"'+ this.$.category.value +'" , "description":"'+ this.$.desc.value +'", "price": "'+ this.$.price.value +'"}]';
+          this.$.insertNewBook.body = body;
+          this.$.insertNewBook.generateRequest();
+
+          // fire an event to update the table in view 2
+          this.dispatchEvent(new CustomEvent('newBookAdded', {detail:{title: this.$.title.value, description: this.$.desc.value}, bubbles :  true, composed: true}));
+      }
+
+      onSuccessInsert(e){
+        const resp = e.detail.response;
+        var response = JSON.stringify(resp, null, ' ');
+        console.log("Success sent PUT request: "+e.detail.response);
+        this.$.feedback.innerHTML = '<h4>Book successfully added!</h4>';//response + "\n";
+      }
+    }
+
+    window.customElements.define(MyView1.is, MyView1);
+  </script>
+</dom-module>
